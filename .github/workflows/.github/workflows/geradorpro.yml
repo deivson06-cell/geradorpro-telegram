@@ -1,0 +1,40 @@
+name: GeradorPro - Automacao
+
+on:
+  schedule:
+    # 08:00 BRT (UTC-3) = 11:00 UTC
+    - cron: "0 11 * * *"
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run bot
+        env:
+          GERADOR_USER: ${{ secrets.GERADOR_USER }}
+          GERADOR_PASS: ${{ secrets.GERADOR_PASS }}
+        run: |
+          python enviar_banner.py
+
+      - name: Upload debug
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug
+          path: debug
